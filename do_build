@@ -1,0 +1,5 @@
+#!/bin/sh
+touch build_in_progress
+echo 'Starting make'
+make
+rm -f build_in_progress

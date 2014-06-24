@@ -1,0 +1,152 @@
+/*
+	Copyright 2014 Brian Sturgill
+
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+
+			http://www.apache.org/licenses/LICENSE-2.0
+
+			Unless required by applicable law or agreed to in writing, software
+			distributed under the License is distributed on an "AS IS" BASIS,
+			WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+			See the License for the specific language governing permissions and
+			limitations under the License.
+*/
+
+package main
+
+import (
+	"log"
+	"os"
+	"runtime"
+)
+
+var tests_failed = 0
+
+func test(cond bool) {
+	if !cond {
+		_, file, line, ok := runtime.Caller(1)
+		tests_failed++
+		if !ok {
+			log.Panic("Could not get stack information to log failure.")
+		}
+		log.Printf("Test failed(%d): %s\n", line, file)
+	}
+}
+
+func tests_summary() {
+	if tests_failed > 0 {
+		log.Printf("TESTS FAILED: %d\n", tests_failed)
+		os.Exit(1)
+	} else {
+		_, file, _, _ := runtime.Caller(0)
+		log.Printf("All tests passed in: %s\n", file)
+	}
+}
+
+type Int struct {
+	val int
+}
+
+func NewInt(val int) Int {
+	return Int{val:val}
+}
+
+func (lhs Int) add(rhs Int) Int {
+	return Int{val:lhs.val+rhs.val}
+}
+
+func (lhs Int) sub(rhs Int) Int {
+	return Int{val:lhs.val-rhs.val}
+}
+
+func (lhs Int) mul(rhs Int) Int {
+	return Int{val:lhs.val*rhs.val}
+}
+
+func (lhs Int) div(rhs Int) Int {
+	return Int{val:lhs.val/rhs.val}
+}
+
+func (lhs Int) mod(rhs Int) Int {
+	return Int{val:lhs.val%rhs.val}
+}
+
+func (lhs Int) ge(rhs Int) bool {
+	return lhs.val>=rhs.val
+}
+
+func (lhs Int) gt(rhs Int) bool {
+	return lhs.val>rhs.val
+}
+
+func (lhs Int) le(rhs Int) bool {
+	return lhs.val<=rhs.val
+}
+
+func (lhs Int) lt(rhs Int) bool {
+	return lhs.val<rhs.val
+}
+
+func (lhs Int) ne(rhs Int) bool {
+	return lhs.val!=rhs.val
+}
+
+func (lhs Int) eq(rhs Int) bool {
+	return lhs.val==rhs.val
+}
+
+func dummy0() bool { return true }
+func dummy1(a int) bool { return true }
+func dummy2(a int, b int) bool { return true }
+func dummy3(a int, b int, c int) bool { return true }
+
+func main() {
+	a := NewInt(5)
+	b := NewInt(3)
+	c := @@ NewInt(-3) @@ // Make sure it leaves unary minus alone
+	d := @@ NewInt(+3) @@ // Make sure it leaves unary plus alone
+
+	l := make([]Int, 0, 100)
+	l = append(l, a)
+	l = append(l, b)
+	test(@@ a+
+		b == NewInt(8) @@) // Test newline after operator
+	test(@@ c == NewInt(-3) @@) // Also tests function call
+	test(@@ d == b @@)
+	test(@@ d === b @@)
+	test(@@ d != c @@)
+	test(@@ d !== c @@)
+	test(@@ b <= b @@)
+	test(@@ b >= b @@)
+	test(@@ c < d @@)
+	test(@@ c <= d @@)
+	test(@@ d > c @@)
+	test(@@ d >= c @@)
+	test(@@ a-b*c == NewInt(14) @@)
+	test(@@ (a-b)*c == NewInt(-6) @@)
+	test(@@ a/b == NewInt(1) @@)
+	test(@@ a%b == NewInt(2) @@)
+	test(@@ c.val @@ == -3) // Make sure '.' gets through
+	test(@@ l[1] == d @@)
+	test(@@ a < b || a > b @@)
+	test(@@ !a < b @@)
+	test(@@ !(a < b) || !(a > b) && b == d @@)
+	test(@@ "test" @@ == "test") // Make sure strings pass through
+	test(@@ "test\"\n" @@ == "test\"\n") // Make sure strings pass through
+	test(@@ 132.3 @@ == 132.3) // Make sure floating point constants pass through
+	test(@@ -132.3 @@ == -132.3) // Make sure floating point constants pass through
+	test(@@ +132.3 @@ == +132.3) // Make sure floating point constants pass through
+	test(@@ 132.3e3 @@ == 132.3e3) // Make sure floating point constants pass through
+	test(@@ 132.3e-3 @@ == 132.3e-3) // Make sure floating point constants pass through
+	test(@@ 132.3e+3 @@ == 132.3e+3) // Make sure floating point constants pass through
+	test(@@ dummy0() @@) // Make sure function call with 0 args works
+	test(@@ dummy1(1) @@) // Make sure function call with 1 arg works
+	test(@@ dummy2(1,2) @@) // Make sure function call with 2 args works
+	test(@@ dummy3(1,2,3) @@) // Make sure function call with 3 args works
+	// Go does not have ?: test(@@ a<b?false:true @@)
+	// Go does not have "new"
+	test(len("@@@") == 2) // Test delimiter escape
+	tests_summary()
+}
