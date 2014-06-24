@@ -1,5 +1,4 @@
 #udop - User defined operators
-====
 A preprocessor that gives Go, JavaScript, TypeScript and Java a form of user defined operators.
 
 It is useful for things like business logic, where you have numerous expressions involving money, which needs to be encapsulated inside a class.
