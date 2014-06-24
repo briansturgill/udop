@@ -11,7 +11,7 @@ The default `delimchar` is `@`. Delimiter characters are always used in pairs.
 ##Format of `infile`
 The characters set support is UTF/8. Use only those characters supported by your target language.
 
-Inside your normal Go/JavaScript/TypeScript/Java file, enclose expressions which are using your user defined operators inside a pair of delimiter characters.
+Inside your normal Go/JavaScript/TypeScript/Java file, enclose expressions which are using your user defined operators inside a pair of pairs of delimiter characters.
 ```javascript
 var a = @@ b+c*d @@;
 ```
@@ -62,7 +62,7 @@ For your convenience, the following are passed through unchanged:
 |`expr.id`         |Method/property reference
 |`? :`             |Not available in Go
 
-If you need to break an expression with a newline, do so immediately after an operator. The location of the newline is required due to the syntactic oddities of JavaScript, TypeScript and Go. We make it a part of the syntax of expressions so that we can make our output such that line numbers in error messages from the target languages will still be correct. Obviously column numbers may not be correct in such messages.
+If you need to break an expression with a newline, do so immediately after an operator. The location of the newline is required due to the syntactic oddities of JavaScript, TypeScript and Go. Newline is made part of the syntax of expressions so that the line numbers in `udop` output matches the line numbers in `udop` input. This means that line numbers in error messages from the target languages are correct for both files. Obviously column numbers may not be correct in such messages.
 
 ##Escaping delimiters
 Because delimiters occur in pairs... escaping is a bit odd.
